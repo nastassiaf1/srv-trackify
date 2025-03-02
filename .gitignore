@@ -1,0 +1,13 @@
+# Node.js
+node_modules/
+
+# TypeScript
+dist/
+*.tsbuildinfo
+
+# Environment variables
+.env
+
+# IDE specific files
+.vscode/
+.idea/
