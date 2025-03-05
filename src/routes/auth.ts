@@ -75,21 +75,38 @@ const googleAuthCallback: RequestHandler = passport.authenticate('google', {
 const googleLogin: RequestHandler = (req, res) => {
   const user = req.user as User;
 
-  res.json({ message: 'Google login successful', token: user.generateToken() });
+  if (!user) {
+    res.status(401).json({ message: 'Authentication failed' });
+
+    return;
+  }
+
+  const token = user.generateToken();
+
+  res.cookie('token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  });
+
+  if (process.env.REACT_APP_API_URL) {
+    res.redirect(process.env.REACT_APP_API_URL);
+  }
 };
 
-const logout: RequestHandler = (req, res) => {
-  req.logout(() => {});
+const logout: RequestHandler = (_req, res) => {
+  res.clearCookie('token');
   res.json({ message: 'Logged out' });
 };
 
-const me = async (
+const getUser = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const token = req.headers.authorization?.split(' ')[1];
+    const token = req.cookies.token;
 
     if (!token) {
       res.status(401).json({ message: 'Access denied' });
@@ -100,6 +117,7 @@ const me = async (
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
       id: number;
     };
+
     const user = await User.findByPk(decoded.id);
 
     if (!user) {
@@ -119,6 +137,6 @@ router.post('/login', login);
 router.get('/google', googleAuth);
 router.get('/google/callback', googleAuthCallback, googleLogin);
 router.post('/logout', logout);
-router.get('/me', me);
+router.get('/user', getUser);
 
 export default router;

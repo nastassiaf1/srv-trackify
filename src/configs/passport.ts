@@ -26,7 +26,7 @@ passport.use(
             email,
             displayName,
             avatar,
-          });
+          }, { returning: true });
         } else {
           user.avatar = avatar;
           user.displayName = displayName;
@@ -50,7 +50,7 @@ passport.deserializeUser(async (id, done) => {
   try {
     const user = await User.findByPk(id as string);
 
-    done(null, user);
+    done(null, user?.dataValues);
   } catch (error) {
     done(error, null);
   }

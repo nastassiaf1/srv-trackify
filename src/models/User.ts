@@ -14,7 +14,7 @@ export class User extends Model {
 
   generateToken() {
     return jwt.sign(
-      { id: this.id, email: this.email, role: this.role },
+      { id: this.get('id'), email: this.get('email'), role: this.get('role') },
       process.env.JWT_SECRET!,
       { expiresIn: '7d' },
     );

@@ -2,6 +2,7 @@ import express from 'express';
 import session from 'express-session';
 import cors from 'cors';
 import passport from 'passport';
+import cookieParser from 'cookie-parser';
 import { sequelize } from './configs/database';
 import { logger } from './middleware/logger';
 import authRoutes from './routes/auth';
@@ -11,8 +12,14 @@ import './configs/passport';
 const app = express();
 const PORT = CONFIG.PORT || 5000;
 
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.REACT_APP_API_URL,
+    credentials: true,
+  }),
+);
 app.use(express.json());
+app.use(cookieParser());
 app.use(
   session({
     secret: CONFIG.SESSION_SECRET!,
@@ -23,7 +30,6 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(logger);
-
 app.use('/auth', authRoutes);
 
 app.listen(PORT, async () => {
