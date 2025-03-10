@@ -1,5 +1,6 @@
 import { sequelize } from '../configs/database';
 import '../models/User';
+import '../models/Habit';
 
 // npx ts-node src/scripts/sync.ts
 
