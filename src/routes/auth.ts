@@ -35,9 +35,16 @@ const register = async (
 
     const user = await User.create({ email, password, role });
 
-    res
-      .status(201)
-      .json({ message: 'User created', token: user.generateToken() });
+    const token = user.generateToken();
+
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    res.status(201).json({ message: 'User created' });
   } catch (error) {
     next(error);
   }
@@ -52,13 +59,22 @@ const login = async (
     const { email, password } = req.body;
     const user = await User.findOne({ where: { email } });
 
-    if (!user || !(await user.checkPassword(password))) {
+    if (!user || !(await user?.checkPassword(password))) {
       res.status(401).json({ message: 'Invalid email or password' });
 
       return;
     }
 
-    res.json({ message: 'Login successful', token: user.generateToken() });
+    const token = user.generateToken();
+
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    res.json({ message: 'Login successful' });
   } catch (error) {
     next(error);
   }

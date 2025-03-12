@@ -22,14 +22,22 @@ passport.use(
         let user = await User.findOne({ where: { email } });
 
         if (!user) {
-          user = await User.create({
-            email,
-            displayName,
-            avatar,
-          }, { returning: true });
+          user = await User.create(
+            {
+              email,
+              displayName,
+              avatar,
+            },
+            { returning: true },
+          );
         } else {
-          user.avatar = avatar;
-          user.displayName = displayName;
+          if (avatar) {
+            user.setDataValue('avatar', avatar);
+          }
+
+          if (displayName) {
+            user.setDataValue('displayName', displayName);
+          }
 
           await user.save();
         }

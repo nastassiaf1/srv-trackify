@@ -5,25 +5,24 @@ import jwt from 'jsonwebtoken';
 import { Role } from '../constants';
 
 export class User extends Model {
-  public id!: number;
-  public email!: string;
-  public password!: string | null;
-  public role!: string;
-  public displayName!: string | null;
-  public avatar!: string | null;
-
   generateToken() {
     return jwt.sign(
-      { id: this.get('id'), email: this.get('email'), role: this.get('role') },
+      {
+        id: this.getDataValue('id'),
+        email: this.getDataValue('email'),
+        role: this.getDataValue('role'),
+      },
       process.env.JWT_SECRET!,
       { expiresIn: '7d' },
     );
   }
 
   async checkPassword(password: string): Promise<boolean> {
-    if (!this.password) return false;
+    const passwordToCompare = this.getDataValue('password');
 
-    return bcrypt.compare(password, this.password);
+    if (!passwordToCompare) return false;
+
+    return bcrypt.compare(password, passwordToCompare);
   }
 }
 
@@ -63,7 +62,9 @@ User.init(
 );
 
 User.beforeCreate(async (user: User) => {
-  if (user.password) {
-    user.password = await bcrypt.hash(user.password, 10);
+  const password = user.getDataValue('password') as string | null;
+
+  if (password) {
+    user.setDataValue('password', await bcrypt.hash(password, 10));
   }
 });
