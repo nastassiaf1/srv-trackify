@@ -4,9 +4,10 @@ import cors from 'cors';
 import passport from 'passport';
 import cookieParser from 'cookie-parser';
 import { sequelize } from './configs/database';
+import { CONFIG } from './configs/config';
 import { logger } from './middleware/logger';
 import authRoutes from './routes/auth';
-import { CONFIG } from './configs/config';
+import contactRoutes from './routes/contact';
 import './configs/passport';
 
 const app = express();
@@ -30,7 +31,9 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(logger);
+
 app.use('/auth', authRoutes);
+app.use('/contact', contactRoutes);
 
 app.listen(PORT, async () => {
   try {
