@@ -8,6 +8,8 @@ import { CONFIG } from './configs/config';
 import { logger } from './middleware/logger';
 import authRoutes from './routes/auth';
 import contactRoutes from './routes/contact';
+import userRoutes from './routes/user';
+
 import './configs/passport';
 
 const app = express();
@@ -34,6 +36,7 @@ app.use(logger);
 
 app.use('/auth', authRoutes);
 app.use('/contact', contactRoutes);
+app.use('/users', userRoutes);
 
 app.listen(PORT, async () => {
   try {
