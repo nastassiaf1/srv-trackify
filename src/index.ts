@@ -9,6 +9,7 @@ import { logger } from './middleware/logger';
 import authRoutes from './routes/auth';
 import contactRoutes from './routes/contact';
 import userRoutes from './routes/user';
+import habitsRoutes from './routes/habit';
 
 import './configs/passport';
 
@@ -37,6 +38,7 @@ app.use(logger);
 app.use('/auth', authRoutes);
 app.use('/contact', contactRoutes);
 app.use('/users', userRoutes);
+app.use('/habits', habitsRoutes);
 
 app.listen(PORT, async () => {
   try {

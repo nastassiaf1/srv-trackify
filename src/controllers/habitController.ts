@@ -1,55 +1,85 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
 import { Habit } from '../models/Habit';
+import { createHabit } from '../services/habitService';
+import { User } from '../models/User';
 
-export const createHabit = async (req: Request, res: Response) => {
+export const getAll = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
-    const {
-      title,
-      description,
-      frequencyType,
-      daysOfWeek,
-      repeatEveryXDays,
-      reminders,
-      hasEndDate,
-      endDate,
-    } = req.body;
-    const userId = req.user?.id;
+    const token = req.cookies.token;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+      id: number;
+    };
 
-    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+    const user = await User.findByPk(decoded.id);
+    const userId = user?.getDataValue('id');
 
-    const habit = await Habit.create({
-      title,
-      description,
-      frequencyType,
-      daysOfWeek,
-      repeatEveryXDays,
-      reminders,
-      hasEndDate,
-      endDate,
-      userId,
-    });
+    if (!userId) {
+      res.status(401).json({ message: 'Unauthorized' });
 
-    res.status(201).json(habit);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to create habit', error });
-  }
-};
-
-export const getAllHabits = async (req: Request, res: Response) => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+      return;
+    }
 
     const habits = await Habit.findAll({
       where: { userId, isArchived: false },
     });
+
     res.json(habits);
   } catch (error) {
-    res.status(500).json({ message: 'Failed to fetch habits', error });
+    next();
   }
 };
 
-export const getHabitById = async (req: Request, res: Response) => {
+export const create = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const token = req.cookies.token;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+      id: number;
+    };
+
+    const user = await User.findByPk(decoded.id);
+    const userId = user?.getDataValue('id');
+
+    if (!userId) {
+      res.status(401).json({ message: 'Unauthorized' });
+
+      return;
+    }
+
+    const {
+      title,
+      description,
+      frequencyType,
+      repeatEveryXDays,
+      daysOfWeek,
+      reminders,
+    } = req.body;
+
+    const newHabit = await createHabit({
+      title,
+      description,
+      frequencyType,
+      repeatEveryXDays,
+      daysOfWeek,
+      reminders,
+      userId,
+    });
+
+    res.status(201).json(newHabit);
+  } catch (err) {
+    next(err);
+  }
+};
+
+/*export const getHabitById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const userId = req.user?.id;
@@ -70,9 +100,11 @@ export const updateHabit = async (req: Request, res: Response) => {
     const updatedData = req.body;
 
     const habit = await Habit.findOne({ where: { id, userId } });
+
     if (!habit) return res.status(404).json({ message: 'Habit not found' });
 
     await habit.update(updatedData);
+
     res.json(habit);
   } catch (error) {
     res.status(500).json({ message: 'Failed to update habit', error });
@@ -102,7 +134,6 @@ export const completeHabit = async (req: Request, res: Response) => {
     const habit = await Habit.findOne({ where: { id, userId } });
     if (!habit) return res.status(404).json({ message: 'Habit not found' });
 
-    // Добавляем текущую дату в список выполненных
     const completedDates = habit.completedDates
       ? [...habit.completedDates, new Date().toISOString()]
       : [new Date().toISOString()];
@@ -128,3 +159,4 @@ export const archiveHabit = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Failed to archive habit', error });
   }
 };
+*/
