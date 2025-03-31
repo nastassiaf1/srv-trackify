@@ -36,6 +36,7 @@ User.init(
     displayName: {
       type: DataTypes.STRING,
       allowNull: true,
+      field: 'display_name',
     },
     email: {
       type: DataTypes.STRING,
@@ -58,6 +59,7 @@ User.init(
   {
     sequelize,
     tableName: 'users',
+    underscored: true,
   },
 );
 
