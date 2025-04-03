@@ -18,6 +18,7 @@ export class Habit extends Model {
   public isCompleted!: boolean;
   public completedAt!: Date | null;
   public userId!: number;
+  public color!: string | null;
 
   public async markAsCompleted(date: string): Promise<void> {
     this.completedDates.push(date);
@@ -117,6 +118,10 @@ Habit.init(
       field: 'user_id',
       references: { model: 'users', key: 'id' },
       onDelete: 'CASCADE',
+    },
+    color: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
   },
   {

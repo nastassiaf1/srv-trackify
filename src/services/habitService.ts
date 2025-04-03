@@ -1,4 +1,5 @@
 import { Habit } from '../models/Habit';
+import { HabitStatus } from './../constants';
 
 interface CreateHabitInput {
   title: string;
@@ -29,4 +30,48 @@ export const createHabit = async (data: CreateHabitInput) => {
 
     return { success: false, message: 'Error creating habit' };
   }
+};
+
+export const updateStatus = async (id: string, status: HabitStatus) => {
+  const habit = await Habit.findOne({ where: { id } });
+
+  if (!habit) {
+    throw new Error('Habit not found');
+  }
+
+  if (habit.getDataValue('isArchived')) {
+    throw new Error('Archived habits cannot be modified');
+  }
+
+  if (status === 'archived') {
+    habit.setDataValue('isArchived', true);
+    habit.setDataValue('isCompleted', false);
+  } else if (status === 'completed') {
+    habit.setDataValue('isCompleted', true);
+  } else if (status === 'active') {
+    habit.setDataValue('isCompleted', false);
+  }
+
+  await habit.save();
+
+  return habit;
+};
+
+export const updateFields = async (
+  id: string,
+  updates: Partial<{ color: string; title: string; description: string }>,
+) => {
+  const habit = await Habit.findOne({ where: { id } });
+
+  if (!habit) {
+    throw new Error('Habit not found');
+  }
+
+  if (updates.color) {
+    habit.setDataValue('color', updates.color);
+  }
+
+  await habit.save();
+
+  return habit;
 };

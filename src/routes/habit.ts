@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import {
-  changeStatus,
   create,
   getAll,
   update,
+  updatePartial,
 } from '../controllers/habitController';
 import { authenticateUser } from '../middleware/auth';
 
@@ -14,6 +14,6 @@ router.use(authenticateUser);
 router.get('/', getAll);
 router.post('/', create);
 router.put('/:id', update);
-router.patch('/:id', changeStatus);
+router.patch('/:id', updatePartial);
 
 export default router;

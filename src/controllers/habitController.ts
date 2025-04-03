@@ -1,7 +1,12 @@
 import { Response, NextFunction } from 'express';
 import { Habit } from '../models/Habit';
-import { createHabit } from '../services/habitService';
+import {
+  createHabit,
+  updateFields,
+  updateStatus,
+} from '../services/habitService';
 import { AuthenticatedRequest } from '../middleware/auth';
+import { HabitStatus } from '../constants';
 
 export const getAll = async (
   req: AuthenticatedRequest,
@@ -10,7 +15,6 @@ export const getAll = async (
 ) => {
   try {
     const userId = req.userId;
-
     const habits = await Habit.findAll({
       where: { userId },
     });
@@ -80,42 +84,33 @@ export const update = async (
   }
 };
 
-export const changeStatus = async (
+export const updatePartial = async (
   req: AuthenticatedRequest,
   res: Response,
   _next: NextFunction,
 ) => {
   try {
     const { id } = req.params;
-    const userId = req.userId;
 
-    const habit = await Habit.findOne({ where: { id, userId } });
+    const { status } = req.query;
+    const { color } = req.body || {};
 
-    if (!habit) {
-      res.status(404).json({ message: 'Habit not found' });
+    let updatedHabit;
 
-      return;
+    if (status) {
+      updatedHabit = await updateStatus(id, status as HabitStatus);
     }
 
-    const { isArchived, isCompleted } = req.body;
+    const partialUpdates: any = {};
+    if (color) partialUpdates.color = color;
 
-    if (!isArchived && !isCompleted) {
-      res.status(400).json({ message: 'Nothing to update' });
+    if (Object.keys(partialUpdates).length > 0) {
+      updatedHabit = await updateFields(id, partialUpdates);
     }
 
-    if (isArchived) {
-      habit.setDataValue('isArchived', isArchived);
-    }
-
-    if (isCompleted) {
-      habit.setDataValue('isCompleted', isCompleted);
-    }
-
-    await habit.save();
-
-    res.json({ message: 'Habit deleted successfully' });
+    res.json(updatedHabit);
   } catch (error) {
-    res.status(500).json({ message: 'Failed to delete habit', error });
+    res.status(500).json({ message: 'Failed to update habit', error });
   }
 };
 
