@@ -57,19 +57,18 @@ export const updateStatus = async (id: string, status: HabitStatus) => {
   return habit;
 };
 
-export const updateFields = async (
-  id: string,
-  updates: Partial<{ color: string; title: string; description: string }>,
-) => {
+export const updateFields = async (id: string, updates: Partial<Habit>) => {
   const habit = await Habit.findOne({ where: { id } });
 
   if (!habit) {
     throw new Error('Habit not found');
   }
 
-  if (updates.color) {
-    habit.setDataValue('color', updates.color);
-  }
+  Object.entries(updates).forEach(([key, value]) => {
+    if (value !== undefined && key in habit) {
+      habit.setDataValue(key as keyof Habit, value);
+    }
+  });
 
   await habit.save();
 

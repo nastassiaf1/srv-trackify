@@ -91,9 +91,8 @@ export const updatePartial = async (
 ) => {
   try {
     const { id } = req.params;
-
     const { status } = req.query;
-    const { color } = req.body || {};
+    const updates = req.body;
 
     let updatedHabit;
 
@@ -101,11 +100,30 @@ export const updatePartial = async (
       updatedHabit = await updateStatus(id, status as HabitStatus);
     }
 
-    const partialUpdates: any = {};
-    if (color) partialUpdates.color = color;
+    const allowedFields = [
+      'title',
+      'description',
+      'color',
+      'frequencyType',
+      'repeatEveryXDays',
+    ] as (keyof Partial<Habit>)[];
+
+    const partialUpdates: Partial<Habit> = {};
+
+    for (const key of allowedFields) {
+      if (key in updates) {
+        partialUpdates[key] = updates[key];
+      }
+    }
 
     if (Object.keys(partialUpdates).length > 0) {
       updatedHabit = await updateFields(id, partialUpdates);
+    }
+
+    if (!updatedHabit) {
+      res.status(400).json({ message: 'No valid fields provided for update' });
+
+      return;
     }
 
     res.json(updatedHabit);
