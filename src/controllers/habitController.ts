@@ -25,6 +25,29 @@ export const getAll = async (
   }
 };
 
+export const getById = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  _next: NextFunction,
+) => {
+  try {
+    const { id } = req.params;
+    const habit = await Habit.findOne({
+      where: { id },
+    });
+
+    if (!habit) {
+      res.status(404).json({ message: 'Habit not found' });
+
+      return;
+    }
+
+    res.json(habit);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch habit', error });
+  }
+};
+
 export const create = async (
   req: AuthenticatedRequest,
   res: Response,
@@ -132,20 +155,7 @@ export const updatePartial = async (
   }
 };
 
-/*export const getHabitById = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const userId = req.user?.id;
-
-    const habit = await Habit.findOne({ where: { id, userId } });
-    if (!habit) return res.status(404).json({ message: 'Habit not found' });
-
-    res.json(habit);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to fetch habit', error });
-  }
-};
-
+/*
 export const completeHabit = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
