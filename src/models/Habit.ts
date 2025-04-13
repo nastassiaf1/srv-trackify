@@ -128,5 +128,6 @@ Habit.init(
     sequelize,
     tableName: 'habits',
     underscored: true,
+    timestamps: true,
   },
 );
