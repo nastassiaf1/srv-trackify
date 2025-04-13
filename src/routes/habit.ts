@@ -5,6 +5,7 @@ import {
   getById,
   update,
   updatePartial,
+  markHabitDayAsDone,
 } from '../controllers/habitController';
 import { authenticateUser } from '../middleware/auth';
 
@@ -16,6 +17,7 @@ router.get('/', getAll);
 router.get('/:id', getById);
 router.post('/', create);
 router.put('/:id', update);
+router.patch('/:id/completed', markHabitDayAsDone);
 router.patch('/:id', updatePartial);
 
 export default router;

@@ -1,3 +1,4 @@
+import { CompletedDay } from '../interfaces/habit';
 import { Habit } from '../models/Habit';
 import { HabitStatus } from './../constants';
 
@@ -26,9 +27,7 @@ export const createHabit = async (data: CreateHabitInput) => {
 
     return { success: true, habit };
   } catch (error) {
-    console.error('Error creating habit:', error);
-
-    return { success: false, message: 'Error creating habit' };
+    throw new Error('Error creating habit');
   }
 };
 
@@ -69,6 +68,35 @@ export const updateFields = async (id: string, updates: Partial<Habit>) => {
       habit.setDataValue(key as keyof Habit, value);
     }
   });
+
+  await habit.save();
+
+  return habit;
+};
+
+export const updateCompletedDays = async (id: string, day: CompletedDay) => {
+  const habit = await Habit.findOne({ where: { id } });
+
+  if (!habit) {
+    throw new Error('Habit not found');
+  }
+
+  const { date, completed } = day;
+  const completedDates: string[] = habit.completedDates || [];
+
+  const alreadyCompleted = completedDates.includes(date);
+
+  let updatedDates: string[];
+
+  if (completed && !alreadyCompleted) {
+    updatedDates = [...completedDates, date];
+  } else if (!completed && alreadyCompleted) {
+    updatedDates = completedDates.filter((d) => d !== date);
+  } else {
+    return habit;
+  }
+
+  habit.setDataValue('completedDates', updatedDates);
 
   await habit.save();
 

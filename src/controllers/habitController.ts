@@ -4,6 +4,7 @@ import {
   createHabit,
   updateFields,
   updateStatus,
+  updateCompletedDays,
 } from '../services/habitService';
 import { AuthenticatedRequest } from '../middleware/auth';
 import { HabitStatus } from '../constants';
@@ -155,23 +156,18 @@ export const updatePartial = async (
   }
 };
 
-/*
-export const completeHabit = async (req: Request, res: Response) => {
+export const markHabitDayAsDone = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  _next: NextFunction,
+) => {
+  const { id } = req.params;
+
   try {
-    const { id } = req.params;
-    const userId = req.user?.id;
+    const updatedHabit = await updateCompletedDays(id, req.body);
 
-    const habit = await Habit.findOne({ where: { id, userId } });
-    if (!habit) return res.status(404).json({ message: 'Habit not found' });
-
-    const completedDates = habit.completedDates
-      ? [...habit.completedDates, new Date().toISOString()]
-      : [new Date().toISOString()];
-
-    await habit.update({ completedDates, streak: habit.streak + 1 });
-    res.json({ message: 'Habit completed', habit });
+    res.json(updatedHabit);
   } catch (error) {
-    res.status(500).json({ message: 'Failed to complete habit', error });
+    res.status(500).json({ message: 'Failed to update habit', error });
   }
 };
-*/
