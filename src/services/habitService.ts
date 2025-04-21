@@ -82,7 +82,7 @@ export const updateCompletedDays = async (id: string, day: CompletedDay) => {
   }
 
   const { date, completed } = day;
-  const completedDates: string[] = habit.completedDates || [];
+  const completedDates: string[] = habit.getDataValue('completedDates') || [];
 
   const alreadyCompleted = completedDates.includes(date);
 
